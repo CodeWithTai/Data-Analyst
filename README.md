@@ -1,6 +1,13 @@
 # 📊 AI Jobs Market 2025–2026: Salary & Skills Analysis
 
-A Python data analysis project exploring salaries and in-demand skills across **1,500 AI job postings** from 2025–2026, built while learning pandas, matplotlib, and seaborn from the ground up.
+![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Wrangling-150458?logo=pandas&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-Visualization-11557C)
+![Seaborn](https://img.shields.io/badge/Seaborn-Statistical%20Plots-4C72B0)
+
+**TL;DR:** I analyzed 1,500 AI job postings and found that the skill everyone's learning (Python) and the skills that actually pay the most (System Design, Prompt Engineering, RAG) barely overlap. Demand and salary are almost completely uncorrelated (r ≈ 0.04). Here's how I found that out.
+
+![Dashboard overview](images/dashboard_overview.png)
 
 ---
 
@@ -26,9 +33,9 @@ A Python data analysis project exploring salaries and in-demand skills across **
 
 ## 📌 Overview
 
-This project digs into a snapshot of the AI job market to answer a question I was genuinely curious about: **which AI skills are worth learning — the popular ones, or the ones nobody's talking about?**
+If you wanted to break into AI right now, what should you actually learn? The obvious answer — "learn Python, it's everywhere" — turns out to only be half the story.
 
-It started as a practice project for learning pandas and matplotlib (loosely following the structure of Luke Barousse's Python data analysis course), then turned into a full mini-analysis once I found a dataset I actually cared about.
+This project digs into a snapshot of the AI job market to answer the question I was genuinely curious about: **which AI skills are worth learning — the popular ones, or the ones nobody's talking about?** It started as a practice project for learning pandas and matplotlib (loosely following the structure of Luke Barousse's Python data analysis course), then turned into a full mini-analysis once I found a dataset I actually cared about.
 
 ---
 
@@ -111,6 +118,8 @@ for idx, row in skill_stats.iterrows():
                 xytext=(10, 10), textcoords='offset points')
 ```
 
+![Salary vs count of top job titles](images/q1_salary_scatter.png)
+
 **Chart type:** Scatter plot, with each job title labeled directly on its point.
 
 **Findings:**
@@ -145,6 +154,8 @@ sns.barplot(data=df_plot, y='job_skills', x='skill_percent',
             hue='skill_count', palette='dark:salmon_r', ax=ax)
 ```
 
+![Top 10 most in-demand skills](images/q2_top_skills.png)
+
 **Chart type:** Horizontal seaborn bar chart, with each bar labeled with its exact percentage.
 
 **Findings:**
@@ -177,6 +188,8 @@ g = sns.jointplot(data=skill_stats, x='skill_count', y='mean_salary',
                    kind='kde', height=8, cmap='Blues', fill=True)
 ```
 
+![Skill demand vs salary KDE joint plot](images/q3_demand_vs_salary.png)
+
 **Chart type:** KDE joint plot — a density map of where skills cluster, with marginal distributions on each axis.
 
 **Findings:** The correlation between how in-demand a skill is and how much it pays on average came out to **r ≈ 0.04** — essentially no relationship. Most skills cluster tightly at low demand (fewer than ~100 postings) across a *wide* range of salaries ($140K–$250K), while a small handful of generalist skills (Python chief among them) have very high demand without commanding a premium.
@@ -193,9 +206,11 @@ df_top_pay = df_exploded[df_exploded['required_skills'].isin(top_10_skills)]
 skill_order = df_top_pay.groupby('required_skills')['annual_salary_usd'].median().sort_values(ascending=False).index
 
 sns.boxplot(data=df_top_pay, y='required_skills', x='annual_salary_usd',
-            order=skill_order, palette='Set2',
+            order=skill_order, hue='required_skills', legend=False, palette='Set2',
             flierprops=dict(marker='o', markerfacecolor='red', markersize=8))
 ```
+
+![Top 10 highest paying skills boxplot](images/q4_top_paying_boxplot.png)
 
 **Chart type:** Boxplot — shows the full salary distribution (median, spread, outliers) per skill, not just the average.
 
@@ -219,7 +234,9 @@ sns.boxplot(data=df_top_pay, y='required_skills', x='annual_salary_usd',
 
 ## 💡 Key Insights
 
-- **Demand ≠ pay.** The correlation between skill frequency and salary is close to zero (r ≈ 0.04). Being everywhere (like Python) doesn't mean being paid a premium for it.
+> **The headline finding:** demand and pay are nearly uncorrelated (r ≈ 0.04). Being everywhere (like Python) doesn't mean being paid a premium for it — and being rare doesn't hurt if the skill is specialized enough.
+
+- **Demand ≠ pay.** The correlation between skill frequency and salary is close to zero. Chasing the most-listed skill on job boards won't necessarily chase the highest salary.
 - **Specialization pays.** Every skill in the top-10 highest-paying list (System Design, Prompt Engineering, RAG, LLM Fine-tuning, MLOps...) is a specialized, LLM-era skill — none of them crack the top-10 *most common* list.
 - **Volume leader ≠ pay leader, except once.** LLM Engineer is the rare case where the most-posted role is also the highest-paid — most other high-volume roles (Prompt Engineer, Robotics Engineer) pay well below the top tier.
 - **LLM-specific roles pay more on average** — jobs flagged `is_llm_role` average **$207,746** vs. **$191,309** for non-LLM roles, a premium of roughly $16K.
@@ -252,6 +269,7 @@ Going into this project I didn't know pandas or matplotlib beyond the basics —
 - **Overlapping scatter labels.** With 10 job titles crammed into one chart, several labels landed on top of each other (`Robotics Engineer (AI)` and `Prompt Engineer` especially). Fixed with a bigger figure size and manual per-point `xytext` offsets.
 - **The `1e-5` scientific notation** on the joint plot's marginal axis — resolved by turning off that axis (`g.ax_marg_y.axis('off')`) rather than fighting with the formatter.
 - **Picking a chart for Q3.** Went scatter → hexbin → KDE joint plot before landing on the one that actually told the story (density of where skills cluster), instead of just plotting more dots.
+- **Seaborn's `palette`-without-`hue` deprecation.** Newer seaborn versions raise a `FutureWarning` unless `hue` is explicitly set alongside `palette` — fixed by setting `hue` to the same categorical column and adding `legend=False`.
 
 ---
 
